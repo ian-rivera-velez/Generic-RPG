@@ -15,7 +15,14 @@ public class GameRunner {
         Scanner input = new Scanner(System.in);
         //Decides run type (sim or game)
         System.out.println("Would you like to run this as a simulation or as a game?");
+        
         String answer = input.nextLine().toLowerCase();
+        while (!answer.equals("game") || !answer.equals("simulation") || !answer.equals("sim")){
+            System.out.println("Answer invalid. Please enter \"Game\" or \"Simulation\".")
+            System.out.println("Would you like to run this as a simulation or as a game?");
+            answer = input.nextLine().toLowerCase();
+        }
+
         //runs as game
         if (answer.equals("game")){
             MediaFile.setInputFile("Generic RPG Save File");
@@ -66,18 +73,31 @@ public class GameRunner {
                 }
             } else { //if no choice, it just makes a new party.
                 System.out.println("How many characters would you like to have in your party? (Up to 4)");
-                int partySize = Integer.parseInt(input.nextLine());
+                int partySize;
+                try{
+                    partySize = Integer.parseInt(input.nextLine());
+                } catch (Exception e){
+                    System.out.println("Please enter a number.");
+                }
                 while(partySize < 0 || partySize > 4){
                     System.out.println("Your party needs to have 1, 2, 3 or 4 players.");
                     System.out.println("How many characters would you like to have in your party? (Up to 4)");
-                    partySize = Integer.parseInt(input.nextLine());
+                    try{
+                        partySize = Integer.parseInt(input.nextLine());
+                    } catch (Exception e){
+                        System.out.println("Please enter a number.");
+                    }
                 }
                 characterCreation(partySize, false, "");
             }
             game();
         } else if (answer.equals("simulation") || answer.equals("sim")) { //runs as a simulation
-            System.out.println("Would you like to select a class? [y/n]");
-            String answerToClass = input.nextLine();
+            String answerToClass;
+            do{
+                System.out.println("Would you like to select a class? [y/n]");
+                answerToClass = input.nextLine().toLowerCase();
+            } while (!(answerToClass.equals("yes") || answerToClass.equals("y") || answerToClass.equals("n") || answerToClass.equals("no")));
+
             if (answerToClass.equalsIgnoreCase("yes") || answerToClass.equalsIgnoreCase("y")) {
                 System.out.println("What class would you like your character to be? (enemies will be randomized every battle)");
                 String type = input.nextLine().toLowerCase();
@@ -170,10 +190,9 @@ public class GameRunner {
         int percentWon = (int)((double)playerWon/amount * 100.0);
         System.out.println("Results: \nPlayer won: " + playerWon + " times\nEnemy won: " + enemyWon + " times\nWin Percentage: " + percentWon + "%\nThere were an average of " + roundsPerBattle + " rounds per battle.");
     }
-    //Character Creation Menu
 
     /**
-     *
+     * Character Creation Menu
      * @param characterCount how many characters you want
      * @param saveFile whether you want to use the save file.
      * @param info the first line of the save file. used to finish loading in the team.
@@ -199,7 +218,7 @@ public class GameRunner {
                 while(!worked) {
                     System.out.println("Please choose yes or no.");
                     selection = input.nextLine();
-                    if (selection.equalsIgnoreCase("yes") || selection.equalsIgnoreCase("y")) {
+                    if (selection.equalsIgnoreCase("yes") || selection.equalsIgnoreCase("y") || selection.equalsIgnoreCase("no") || selection.equalsIgnoreCase("n")) {
                         worked = true;
                     }
                 }
@@ -212,6 +231,7 @@ public class GameRunner {
                 System.out.println("Your character has been created. Here are your stats:");
                 System.out.println(playerTeam);
             }
+            input.close();
             MediaFile.saveAndClose();
         } else {
             while (info != null) {
@@ -279,8 +299,10 @@ public class GameRunner {
                     }
                 }
             }
+            input.close();
             return true; //it worked
         } else if(selection.equals("n") || selection.equals("no")) { //random class
+            input.close();
             System.out.println("You've chosen not to choose a class. That's fine! We'll just randomly select it now.");
             int random = (int)(Math.random() * 4);
             if (random == 0){
@@ -299,6 +321,7 @@ public class GameRunner {
             System.out.println("Your character is now a " + playerTeam.get(playerTeam.size()-1).getType());
             return true; //it worked
         } else {
+            input.close();
             return false; //it didn't work, so it will do it again
         }
     }
@@ -351,16 +374,17 @@ public class GameRunner {
     public static void endOfGame(){
         Scanner input = new Scanner(System.in);
         System.out.println("\n\nYou've defeated 5 enemies. Congratulations, you won!");
-        //come back later, wait 500 milliseconds (half second)
         System.out.println("...");
-        //come back later, wait 500 milliseconds (half second)
         System.out.println("Now what?");
-        //come back later, wait 500 milliseconds (half second)
         System.out.println("I guess we can do it again. Would you like to? [yes] [no]");
         String endOfGame = input.nextLine().toLowerCase();
         if (endOfGame.equals("yes") || endOfGame.equals("y")){
-            System.out.println("You currently have a team created. \nWould you like to create a new team or stay with your current team? (if your characters died, they will not be in your new team) [keep] [new]");
-            String newCharacter = input.nextLine().toLowerCase();
+            String newCharacter;
+            do {
+                System.out.println("You currently have a team created. \nWould you like to create a new team or stay with your current team? (if your characters died, they will not be in your new team) [keep] [new]");
+                newCharacter = input.nextLine().toLowerCase();
+            } while (!(newCharacter.equals("keep") || newCharacter.equals("k") || newCharacter.equals("new") || newCharacter.equals("n")));
+            
             if (newCharacter.equals("keep") || newCharacter.equals("k")){ //using the same team resets the enemy count and heals the characters to full health
                 enemiesDefeated = 0;
                 for (Character current : playerTeam){
@@ -388,8 +412,12 @@ public class GameRunner {
                 enemiesDefeated = 0;
                 game(); //restarts the game
             }
-
+        } else {
+            System.out.println("Okay! See you later then!");
+            System.out.println("[Game exited]");
+            System.exit(0);
         }
+        input.close();
     }
 
     /**
@@ -484,6 +512,7 @@ public class GameRunner {
                 }
             }
 
+            input.close();
 
             int result = round(playerTeam.get(playerOption), enemyTeam.get(enemyOption));
             if (result == 1) {
@@ -569,6 +598,7 @@ public class GameRunner {
                 }
             }
         }
+        input.close();
         if (enemy.getHealth() <= 0){
             return 1;
         } else if (player.getHealth() <= 0) {
@@ -618,6 +648,7 @@ public class GameRunner {
                 default -> System.out.println("That's not an option. Try again.");
             }
         }
+        input.close();
     }
 
 }
